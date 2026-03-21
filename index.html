@@ -4,35 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
     <title>Calculator</title>
   </head>
   <body>
     <div class="calculator">
-      <div class="upper-display">34+12</div>
-      <div class="lower-display">453</div>
-      <div class="btn-container">
+      <div class="upper-display"></div>
+      <div class="lower-display"></div>
+      <div class="keypad">
         <div class="container-left">
-          <button class="btn">AC</button>
-          <button class="btn">/</button>
-          <button class="btn">x</button>
-          <button class="btn">7</button>
-          <button class="btn">8</button>
-          <button class="btn">9</button>
-          <button class="btn">4</button>
-          <button class="btn">5</button>
-          <button class="btn">6</button>
-          <button class="btn">1</button>
-          <button class="btn">2</button>
-          <button class="btn">3</button>
-          <button class="btn">.</button>
-          <button class="btn flex">0</button>
+          <button class="btn purple" data-operator="clear">AC</button>
+          <button class="btn purple" data-operator="divide">/</button>
+          <button class="btn purple" data-operator="multiply">x</button>
+          <button class="btn" data-btn="7">7</button>
+          <button class="btn" data-btn="8">8</button>
+          <button class="btn" data-btn="9">9</button>
+          <button class="btn" data-btn="4">4</button>
+          <button class="btn" data-btn="5">5</button>
+          <button class="btn" data-btn="6">6</button>
+          <button class="btn" data-btn="1">1</button>
+          <button class="btn" data-btn="2">2</button>
+          <button class="btn" data-btn="3">3</button>
+          <button class="btn" data-operator="decimal">.</button>
+          <button class="btn flex" data-btn="0">0</button>
         </div>
         <div class="container-right">
-          <button class="btn">⌫</button>
-          <button class="btn">-</button>
-          <button class="btn">+</button>
-          <button class="btn flex">=</button>
+          <button class="btn" data-operator="delete">⌫</button>
+          <button class="btn" data-operator="subtract">-</button>
+          <button class="btn" data-operator="add">+</button>
+          <button class="btn flex" data-operator="sum">=</button>
         </div>
       </div>
     </div>
