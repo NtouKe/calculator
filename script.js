@@ -66,8 +66,18 @@ const calculator = {
     this.resetOnNextInput = true;
   },
 
-  init() {
+  reset() {
+    this.currentInput = "0";
+    this.operator = null;
+    this.accumulator = null;
+    this.resetOnNextInput = false;
+    this.display.upperText = null;
+    this.display.updateUpper();
     this.display.updateLower();
+  },
+
+  init() {
+    this.reset();
     const keypad = document.querySelector(".keypad");
 
     keypad.addEventListener("click", (e) => {
@@ -85,6 +95,9 @@ const calculator = {
       } else if (operator === "addition") {
         this.addition();
         this.handelOperator(operator);
+        console.log("clicked " + operator);
+      } else if (operator === "reset") {
+        this.reset();
         console.log("clicked " + operator);
       }
     });
