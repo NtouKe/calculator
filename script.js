@@ -31,8 +31,8 @@ const calculator = {
     this.display.updateLower();
   },
 
-  handelOperator(operator) {
-    operatorSymbols = {
+  handleOperator(operator) {
+    const operatorSymbols = {
       addition: "+",
       subtract: "-",
       multiply: "x",
@@ -43,26 +43,31 @@ const calculator = {
       this.operator = operatorSymbols[operator];
       this.display.upperText += operatorSymbols[operator];
       this.display.updateUpper();
-      console.log(this.operator);
     }
   },
 
-  handelOperations: {
+  handleOperations: {
     addition() {
       calculator.accumulator += +calculator.currentInput;
     },
   },
 
   delete() {
+    if (this.resetOnNextInput) {
+      this.currentInput = "0";
+      this.display.updateLower();
+    }
     if (this.currentInput === "0") return;
     this.currentInput = this.currentInput.slice(0, -1) || "0";
     this.display.updateLower();
   },
 
   addition() {
-    this.handelOperations.addition();
+    if (this.currentInput === "0") return;
+    this.handleOperations.addition();
     this.display.upperText = this.accumulator;
     this.display.updateUpper();
+    this.handleOperator("addition");
     this.resetOnNextInput = true;
   },
 
@@ -74,6 +79,32 @@ const calculator = {
     this.display.upperText = null;
     this.display.updateUpper();
     this.display.updateLower();
+  },
+
+  equals() {
+    const operatorSymbols = {
+      "+": "addition",
+      "-": "subtract",
+      x: "multiply",
+      "÷": "divide",
+    };
+
+    const clear = () => {
+      this.display.upperText = null;
+      this.display.updateLower();
+      this.display.updateUpper();
+      this.accumulator = null;
+      this.resetOnNextInput = true;
+      this.operator = null;
+    };
+
+    if (this.resetOnNextInput) {
+      clear();
+      return;
+    }
+    this.handleOperations[operatorSymbols[this.operator]]();
+    this.currentInput = this.accumulator;
+    clear();
   },
 
   init() {
@@ -94,10 +125,12 @@ const calculator = {
         console.log("clicked " + operator);
       } else if (operator === "addition") {
         this.addition();
-        this.handelOperator(operator);
         console.log("clicked " + operator);
       } else if (operator === "reset") {
         this.reset();
+        console.log("clicked " + operator);
+      } else if (operator === "equals") {
+        this.equals();
         console.log("clicked " + operator);
       }
     });
