@@ -1,13 +1,13 @@
 const calculator = {
   currentInput: "0",
   operator: "",
-  accumulator: 0,
+  accumulator: "",
   resetOnNextInput: false,
 
   display: {
     _upperEl: document.querySelector(".upper-display"),
     _lowerEl: document.querySelector(".lower-display"),
-    secondaryDisplay: 0,
+    secondaryDisplay: "",
 
     updateSecondaryDisplay() {
       this._upperEl.textContent = this.secondaryDisplay;
@@ -21,15 +21,18 @@ const calculator = {
         this._lowerEl.textContent = "NaN";
         return;
       }
-      if (calculator.accumulator === 0) {
-        this.updateSecondaryDisplay();
-        this.updateMainDisplay();
-      } else {
-        console.log(calculator.accumulator);
+      if (calculator.accumulator) {
         this.secondaryDisplay = +parseFloat(calculator.accumulator).toFixed(5) + calculator.operator;
-        this.updateSecondaryDisplay();
-        this.updateMainDisplay();
       }
+      this.updateSecondaryDisplay();
+      this.updateMainDisplay();
+    },
+
+    result() {
+      this.secondaryDisplay = "";
+      calculator.currentInput = calculator.accumulator;
+      this.updateSecondaryDisplay();
+      this.updateMainDisplay();
     },
   },
 
@@ -49,13 +52,14 @@ const calculator = {
 
   handleDecimal() {
     if (!this.currentInput.includes(".")) this.currentInput += ".";
+    this.resetOnNextInput = false;
     this.display.update();
   },
 
   reset() {
     this.currentInput = "0";
     this.operator = "";
-    this.accumulator = 0;
+    this.accumulator = "";
     this.resetOnNextInput = false;
     this.display.secondaryDisplay = "";
     this.display.update();
@@ -72,9 +76,36 @@ const calculator = {
 
   addition() {
     if (this.currentInput === "0") return;
+    if (this.resetOnNextInput) {
+      this.operator = "+";
+      this.display.update();
+      return;
+    }
     this.operator = "+";
     this.accumulator += +parseFloat(this.currentInput);
     this.display.update();
+    this.resetOnNextInput = true;
+  },
+
+  evaluate() {
+    const operatorSymbols = {
+      "+": +this.accumulator + +this.currentInput,
+      "-": +this.accumulator - +this.currentInput,
+      x: +this.accumulator * +this.currentInput,
+      "÷": this.currentInput === "0" ? "🤦" : a / b,
+    };
+
+    if (this.accumulator === "") return;
+
+    if (this.resetOnNextInput) {
+      this.currentInput = this.accumulator;
+      this.display.update();
+      return;
+    }
+
+    this.accumulator = operatorSymbols[this.operator];
+    this.display.result();
+    this.accumulator = "";
     this.resetOnNextInput = true;
   },
 
@@ -219,6 +250,9 @@ const calculator = {
         case "addition":
           this.addition();
           console.log("clicked " + operator);
+          break;
+        case "equal":
+          this.evaluate();
           break;
         default:
           break;
