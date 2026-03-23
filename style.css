@@ -90,13 +90,13 @@ body {
 }
 
 .btn:hover {
-  transition: 0.3s;
-  opacity: 80%;
+  transition: 0.1s;
+  opacity: 70%;
 }
 
 .btn:active {
   transition: none;
-  opacity: 60%;
+  opacity: 50%;
 }
 
 .flex {

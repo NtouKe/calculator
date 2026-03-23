@@ -1,7 +1,8 @@
 const calculator = {
   currentInput: "0",
   operator: "",
-  accumulator: "",
+  previousOperator: "",
+  accumulator: null,
   resetOnNextInput: false,
 
   display: {
@@ -9,30 +10,33 @@ const calculator = {
     _lowerEl: document.querySelector(".lower-display"),
     secondaryDisplay: "",
 
-    updateSecondaryDisplay() {
-      this._upperEl.textContent = this.secondaryDisplay;
-    },
-    updateMainDisplay() {
-      this._lowerEl.textContent = calculator.currentInput;
-    },
+    refresh() {
+      render = () => {
+        this._upperEl.textContent = this.secondaryDisplay;
+        this._lowerEl.textContent = calculator.currentInput;
+      };
 
-    update() {
       if (isNaN(calculator.currentInput)) {
         this._lowerEl.textContent = "NaN";
         return;
       }
       if (calculator.accumulator) {
-        this.secondaryDisplay = +parseFloat(calculator.accumulator).toFixed(5) + calculator.operator;
+        this.secondaryDisplay = `${Number(parseFloat(calculator.accumulator).toFixed(5))} ${calculator.operator}`;
       }
-      this.updateSecondaryDisplay();
-      this.updateMainDisplay();
+      render();
     },
 
-    result() {
+    showFinalResult() {
+      if (calculator.accumulator === "🤦") {
+        this.secondaryDisplay = "";
+        calculator.currentInput = calculator.accumulator;
+        render();
+        return;
+      }
+
       this.secondaryDisplay = "";
-      calculator.currentInput = calculator.accumulator;
-      this.updateSecondaryDisplay();
-      this.updateMainDisplay();
+      calculator.currentInput = Number(parseFloat(calculator.accumulator).toFixed(5));
+      render();
     },
   },
 
@@ -47,177 +51,87 @@ const calculator = {
     } else {
       this.currentInput += number;
     }
-    this.display.update();
+    this.display.refresh();
   },
 
   handleDecimal() {
     if (!this.currentInput.includes(".")) this.currentInput += ".";
     this.resetOnNextInput = false;
-    this.display.update();
+    this.display.refresh();
   },
 
   reset() {
     this.currentInput = "0";
     this.operator = "";
-    this.accumulator = "";
+    this.previousOperator = "";
+    this.accumulator = 0;
     this.resetOnNextInput = false;
     this.display.secondaryDisplay = "";
-    this.display.update();
+    this.display.refresh();
   },
 
   delete() {
     if (this.resetOnNextInput) {
       this.currentInput = "0";
-      this.display.update();
+      this.display.refresh();
     }
     this.currentInput = this.currentInput.slice(0, -1) || "0";
-    this.display.update();
+    this.display.refresh();
   },
 
-  addition() {
+  operations: {
+    "+": (a, b) => +a + +b,
+    "-": (a, b) => +a - +b,
+    x: (a, b) => +a * +b,
+    "/": (a, b) => (b == 0 ? "🤦" : +a / +b),
+  },
+
+  setOperator(op) {
     if (this.currentInput === "0") return;
-    if (this.resetOnNextInput) {
-      this.operator = "+";
-      this.display.update();
-      return;
+    if (this.resetOnNextInput && !this.accumulator) {
+      this.accumulator = this.currentInput;
+      this.operator = op;
+      this.previousOperator = op;
+      this.resetOnNextInput = true;
+      this.display.refresh();
+    } else if (this.resetOnNextInput) {
+      this.operator = op;
+      this.previousOperator = op;
+      this.display.refresh();
+    } else if (!this.accumulator) {
+      this.accumulator = this.currentInput;
+      this.operator = op;
+      this.previousOperator = op;
+      this.resetOnNextInput = true;
+      this.display.refresh();
+    } else if (this.previousOperator !== "") {
+      this.operator = op;
+      this.accumulator = this.operations[this.previousOperator](this.accumulator, this.currentInput);
+      this.previousOperator = op;
+      this.display.refresh();
+      this.resetOnNextInput = true;
     }
-    this.operator = "+";
-    this.accumulator += +parseFloat(this.currentInput);
-    this.display.update();
-    this.resetOnNextInput = true;
   },
 
-  evaluate() {
-    const operatorSymbols = {
-      "+": +this.accumulator + +this.currentInput,
-      "-": +this.accumulator - +this.currentInput,
-      x: +this.accumulator * +this.currentInput,
-      "÷": this.currentInput === "0" ? "🤦" : a / b,
-    };
-
-    if (this.accumulator === "") return;
+  computeResult() {
+    if (this.accumulator === 0) return;
 
     if (this.resetOnNextInput) {
       this.currentInput = this.accumulator;
-      this.display.update();
+      this.display.showFinalResult();
+      this.accumulator = 0;
+      this.operator = "";
+      this.previousOperator = "";
       return;
     }
 
-    this.accumulator = operatorSymbols[this.operator];
-    this.display.result();
-    this.accumulator = "";
+    this.accumulator = this.operations[this.operator](this.accumulator, this.currentInput);
+    this.display.showFinalResult();
+    this.accumulator = 0;
+    this.operator = "";
+    this.previousOperator = "";
     this.resetOnNextInput = true;
   },
-
-  // handleDigit(number) {
-  //   if (this.resetOnNextInput) {
-  //     this.currentInput = "0";
-  //     this.resetOnNextInput = false;
-  //   }
-  //   if (this.currentInput.length === 9) return;
-  //   if (this.currentInput === "0") {
-  //     this.currentInput = number;
-  //   } else {
-  //     this.currentInput += number;
-  //   }
-  //   this.display.updateLower();
-  // },
-
-  // handleOperator(operator) {
-  //   const operatorSymbols = {
-  //     addition: "+",
-  //     subtract: "-",
-  //     multiply: "x",
-  //     divide: "÷",
-  //   };
-
-  //   if (this.operator === null || this.resetOnNextInput === true) {
-  //     this.operator = operatorSymbols[operator];
-  //     this.display.upperText += operatorSymbols[operator];
-  //     this.display.updateUpper();
-  //   }
-  // },
-
-  // handleOperations: {
-  //   addition() {
-  //     calculator.accumulator += +calculator.currentInput;
-  //   },
-  //   subtract() {
-  //     calculator.accumulator = calculator.accumulator - calculator.currentInput;
-  //   },
-  // },
-
-  // delete() {
-  //   if (this.resetOnNextInput) {
-  //     this.currentInput = "0";
-  //     this.display.updateLower();
-  //   }
-  //   if (this.currentInput === "0") return;
-  //   this.currentInput = this.currentInput.slice(0, -1) || "0";
-  //   this.display.updateLower();
-  // },
-
-  // addition() {
-  //   if (this.currentInput === "0") return;
-  //   this.handleOperations.addition();
-  //   this.display.upperText = this.accumulator;
-  //   this.display.updateUpper();
-  //   this.handleOperator("addition");
-  //   this.resetOnNextInput = true;
-  // },
-
-  // subtract() {
-  //   if (this.currentInput === "0") return;
-  //   if (this.display.upperText === null) {
-  //     this.display.upperText += +this.currentInput;
-  //     this.display.updateUpper();
-  //     this.handleOperator("subtract");
-  //     this.resetOnNextInput = true;
-  //     this.accumulator = this.currentInput;
-  //     return;
-  //   }
-  //   this.handleOperations.subtract();
-  //   this.display.upperText += this.accumulator;
-  //   this.display.updateUpper();
-  //   this.handleOperator("subtract");
-  //   this.resetOnNextInput = true;
-  // },
-
-  // reset() {
-  //   this.currentInput = "0";
-  //   this.operator = null;
-  //   this.accumulator = null;
-  //   this.resetOnNextInput = false;
-  //   this.display.upperText = null;
-  //   this.display.updateUpper();
-  //   this.display.updateLower();
-  // },
-
-  // equals() {
-  //   const operatorSymbols = {
-  //     "+": "addition",
-  //     "-": "subtract",
-  //     x: "multiply",
-  //     "÷": "divide",
-  //   };
-
-  //   const clear = () => {
-  //     this.display.upperText = null;
-  //     this.display.updateLower();
-  //     this.display.updateUpper();
-  //     this.accumulator = null;
-  //     this.resetOnNextInput = true;
-  //     this.operator = null;
-  //   };
-
-  //   if (this.resetOnNextInput) {
-  //     clear();
-  //     return;
-  //   }
-  //   this.handleOperations[operatorSymbols[this.operator]]();
-  //   this.currentInput = this.accumulator;
-  //   clear();
-  // },
 
   init() {
     this.reset();
@@ -248,11 +162,23 @@ const calculator = {
           console.log("clicked " + operator);
           break;
         case "addition":
-          this.addition();
+          this.setOperator("+");
+          console.log("clicked " + operator);
+          break;
+        case "subtraction":
+          this.setOperator("-");
+          console.log("clicked " + operator);
+          break;
+        case "multiplication":
+          this.setOperator("x");
+          console.log("clicked " + operator);
+          break;
+        case "division":
+          this.setOperator("/");
           console.log("clicked " + operator);
           break;
         case "equal":
-          this.evaluate();
+          this.computeResult();
           break;
         default:
           break;
