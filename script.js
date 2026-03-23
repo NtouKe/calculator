@@ -133,9 +133,33 @@ const calculator = {
     this.resetOnNextInput = true;
   },
 
+  handleKeyboardInput(e) {
+    const key = e.key;
+
+    if (/[0-9]/.test(key)) this.handleNumberInput(key);
+    if (key === ".") this.handleDecimal();
+    if (key === "+") this.setOperator("+");
+    if (key === "-") this.setOperator("-");
+    if (key === "*") this.setOperator("x");
+    if (key === "/") {
+      e.preventDefault?.();
+      this.setOperator("/");
+    }
+    if (key === "Enter" || key === "=") {
+      e.preventDefault?.();
+      this.computeResult();
+    }
+    if (key === "Backspace") this.delete();
+    if (key === "Escape" || key === "Delete") this.reset();
+  },
+
   init() {
     this.reset();
     const keypad = document.querySelector(".keypad");
+
+    window.addEventListener("keydown", (e) => {
+      this.handleKeyboardInput(e);
+    });
 
     keypad.addEventListener("click", (e) => {
       const target = e.target;
